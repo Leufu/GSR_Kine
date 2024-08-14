@@ -1,14 +1,16 @@
 const int GSR=A7;
 int sensorValue=0;
 int gsr_average=0;
+int Serial_speed=115200; 
+int promedio_variable=10;
 
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(Serial_speed);
 }
 
 void loop(){
   long sum=0;
-  for(int i=0;i<10;i++)           //Average the 10 measurements to remove the glitch
+  for(int i=0;i<promedio_variable;i++)           //Average the 10 measurements to remove the glitch
       {
       sensorValue=analogRead(GSR);
       sum += sensorValue;
