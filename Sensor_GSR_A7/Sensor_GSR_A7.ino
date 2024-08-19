@@ -4,6 +4,7 @@ int gsr_average=0;
 int Serial_speed=115200; 
 int promedio_variable=10;
 
+#include "utilidades.h"
 void setup(){
   Serial.begin(Serial_speed);
 }
