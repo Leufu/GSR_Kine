@@ -1,65 +1,62 @@
-""""
-La idea de este código es ser la interfaz de usuario
--Ser GUI idealmente
--Tiene que mostrar un grafico en tiempo real de lo  que esta midiendo
--Queremos enteregue un .CSV para leer en excel
-
-Manuel Mesa 
-13/08/24
-"""""
-# Librerias
-# Recordar agregarlas para los requirements.txt déspues, con sus respectivas versiones
-
 import tkinter as tk
-from tkinter import messagebox, filedialog
+from tkinter import ttk, messagebox, filedialog
 import serial
 import serial.tools.list_ports
 import time
 import csv
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import threading
 
 #Clase app para arduino
 
 class ArduinoGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Registro de Datos de Arduino")
+        self.root.title("Arduino GUI")
+
         self.arduino_connected = False
         self.serial_port = None
-        self.data = []   
-        
+        self.data = []
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.port_var = tk.StringVar()
 # Interfaz gráfica
 # Agregar una lista desplegable con los puertos en el cual se va a conectar el dispositivo al PC 
 
-        self.port_label = tk.Label(root, text="Selecciona el puerto:")
-        self.port_label.pack(pady=5)
-        self.port_var = tk.StringVar(root)
-        self.port_menu = tk.OptionMenu(root, self.port_var, "")  # Inicia con un menú vacío
-        self.port_menu.pack(pady=5)      
+        # Lista desplegable de puertos
+        self.port_menu = ttk.OptionMenu(self.root, self.port_var, "Select Port")
+        self.port_menu.grid(row=0, column=0, padx=10, pady=10)
 
-#Actualizar puertos
+        # Botón para actualizar puertos
+        self.refresh_button = tk.Button(self.root, text="Actualizar Puertos", command=self.update_ports)
+        self.refresh_button.grid(row=0, column=1, padx=10, pady=10)
 
-        self.refresh_button = tk.Button(root, text="Actulizar Puertos", command=self.update_ports)
-        self.refresh_button.pack(pady=5)
+        # Botón de conexión
+        self.connect_button = tk.Button(self.root, text="Conectar", command=self.connect_serial)
+        self.connect_button.grid(row=0, column=2, padx=10, pady=10)
 
-# Boton que para comprobar conexión
+        # Etiqueta de estado
+        self.status_label = tk.Label(self.root, text="Estado: Desconectado", fg="red")
+        self.status_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
 
-        self.connect_button = tk.Button(root, text="Conectar", command=self.connect_arduino)
-        self.connect_button.pack(pady=5)
+        # Botón para iniciar la graficación
+        self.start_button = tk.Button(self.root, text="Iniciar Grafica", command=self.start_graph, state="disabled")
+        self.start_button.grid(row=2, column=0, padx=10, pady=10)
 
-# Agregar algún icono que indique el estado del Arduino conectado/desconectado
+        # Botón para detener la graficación
+        self.stop_button = tk.Button(self.root, text="Detener Grafica", command=self.stop_graph, state="disabled")
+        self.stop_button.grid(row=2, column=1, padx=10, pady=10)
 
-        self.status_label = tk.Label(root, text="Estado: Desconectado", fg="red")
-        self.status_label.pack(pady=5)
-#Crear gráfica
+        # Botón para guardar en CSV
+        self.save_button = tk.Button(self.root, text="Guardar Datos", command=self.save_csv, state="disabled")
+        self.save_button.grid(row=2, column=2, padx=10, pady=10)
 
-        self.start_button = tk.Button(root, text="Comenzar Gráfica", command=self.start_graph, state="disabled")
-        self.start_button.pack(pady=5)
-
-        self.stop_button = tk.Button(root, text="Parar Gráfica", command=self.stop_graph, state="disabled")
-        self.stop_button.pack(pady=5)
+        # Configuración de Matplotlib para graficar
+        self.figure, self.ax = plt.subplots()
+        self.canvas = FigureCanvasTkAgg(self.figure, self.root)
+        self.canvas.get_tk_widget().grid(row=3, column=0, columnspan=3, padx=10, pady=10)
 
 # Guardar en CSV
 # abre comienze a guardar
@@ -70,16 +67,18 @@ class ArduinoGUI:
 # USAR serial graph del mismo arduino ???
 # Boton para inicio/paro de graficar en tiempo real
 
-        self.save_button = tk.Button(root, text="Guardar CSV", command=self.save_csv, state="disabled")
-        self.save_button.pack(pady=5)
-
-        # Inicializar la lista de puertos disponibles
-
-        self.update_ports()
+#########################
+#19/08/24
+# El problema:
+# Si me equivoco de puerto hay que cerrar por completo el programa
+# Una vez conectado el puerto deberia haber una opción para hacer desconexión
+# 
+#
+#########################
 #Funciones
-
+    # Inicializar la lista de puertos disponibles
+        
     #Actualizar puertos
-
     def update_ports(self):
         self.available_ports = [port.device for port in serial.tools.list_ports.comports()]
         if not self.available_ports:
@@ -90,14 +89,12 @@ class ArduinoGUI:
         menu.delete(0, 'end')
         for port in self.available_ports:
             menu.add_command(label=port, command=lambda p=port: self.port_var.set(p))
-
     #Conexión a Arduino
-
-    def connect_arduino(self):
+    def connect_serial(self):
         port = self.port_var.get()
         try:
             self.serial_port = serial.Serial(port, 9600, timeout=1)
-            time.sleep(2)  # Espera a que Arduino se reinicie
+            time.sleep(2)
             self.arduino_connected = True
             self.status_label.config(text="Estado: Conectado", fg="green")
             self.connect_button.config(state="disabled")
@@ -139,9 +136,7 @@ class ArduinoGUI:
             except Exception as e:
                 self.stop_graph()
                 messagebox.showerror("Error de Lectura", f"Error al leer del puerto serial\n{str(e)}")
-            
-            # Llama a update_graph después de 100 ms
-
+                        # Llama a update_graph después de 100 ms
             self.root.after(100, self.update_graph)
 
 #Guardar el CSV
@@ -157,7 +152,7 @@ class ArduinoGUI:
                         writer.writerow([i, value])
                 messagebox.showinfo("Guardado", f"Datos guardados en {filename}")
 
-#main loop
+#Main Loop
 
 if __name__ == "__main__":
     root = tk.Tk()
