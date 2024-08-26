@@ -1,108 +1,110 @@
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QComboBox, QLabel, QMessageBox
-from PyQt5.QtCore import QTimer
+import sys
+import csv
+import time
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QComboBox, QMessageBox, QFileDialog
 import pyqtgraph as pg
-import ArduinoSerialComm
-import gestion_data
+from serial_communication import SerialCommunication
 
-class ArduinoGUI(QMainWindow):
-    def __init__(self, serial_comm, data_handler):
+class SerialMonitorApp(QMainWindow):
+    def __init__(self):
         super().__init__()
 
-        self.comm = serial_comm
-        self.data_handler = data_handler
-        self.graphing = False
-
-        self.init_ui()
-
-    def init_ui(self):
-        self.setWindowTitle('Arduino GUI')
+        self.setWindowTitle("Arduino Serial Monitor")
         self.setGeometry(100, 100, 800, 600)
 
-        main_layout = QVBoxLayout()
+        self.serial_comm = SerialCommunication()
+        self.data = []
+        self.timestamps = []
+        self.start_time = None
 
+        # Layout principal
+        layout = QVBoxLayout()
+
+        # Dropdown para seleccionar puerto
         self.port_dropdown = QComboBox()
-        self.update_ports()
-        main_layout.addWidget(self.port_dropdown)
+        self.port_dropdown.addItems(self.serial_comm.get_available_ports())
+        layout.addWidget(self.port_dropdown)
 
-       # self.get_available_ports = QPushButton('Actualizar')
-       # self.get_available_ports.clicked.get_available_ports(self.get_available_portss)
-       # main_layout.addWidget(self.connect_button)
-
-        self.connect_button = QPushButton('Conectar')
+        # Botón para conectar
+        self.connect_button = QPushButton("Conectar")
         self.connect_button.clicked.connect(self.connect_serial)
-        main_layout.addWidget(self.connect_button)
+        layout.addWidget(self.connect_button)
 
-        self.status_label = QLabel('Estado: Desconectado')
-        main_layout.addWidget(self.status_label)
-
-        self.start_button = QPushButton('Iniciar Graficación')
-        self.start_button.setEnabled(False)
+        # Botón para comenzar a graficar
+        self.start_button = QPushButton("Iniciar Gráfica")
         self.start_button.clicked.connect(self.start_graph)
-        main_layout.addWidget(self.start_button)
+        self.start_button.setEnabled(False)
+        layout.addWidget(self.start_button)
 
-        self.stop_button = QPushButton('Detener Graficación')
-        self.stop_button.setEnabled(False)
-        self.stop_button.clicked.connect(self.stop_graph)
-        main_layout.addWidget(self.stop_button)
+        # Botón para desconectar
+        self.disconnect_button = QPushButton("Desconectar")
+        self.disconnect_button.clicked.connect(self.disconnect_serial)
+        self.disconnect_button.setEnabled(False)
+        layout.addWidget(self.disconnect_button)
 
-        self.save_button = QPushButton('Guardar Datos')
-        self.save_button.setEnabled(False)
+        # Gráfico
+        self.plot_widget = pg.PlotWidget()
+        self.plot_widget.setBackground('w')  # Establecer fondo blanco
+        self.plot = self.plot_widget.plot([], [], pen='b')
+        layout.addWidget(self.plot_widget)
+
+        # Botón para guardar datos
+        self.save_button = QPushButton("Guardar CSV")
         self.save_button.clicked.connect(self.save_csv)
-        main_layout.addWidget(self.save_button)
+        self.save_button.setEnabled(False)
+        layout.addWidget(self.save_button)
 
-        self.graph_widget = pg.PlotWidget()
-        self.graph_widget.setBackground('w')
-        self.graph_widget.showGrid(x=True, y=True)
-        self.graph_widget.setLabel('left', 'Valor')
-        self.graph_widget.setLabel('bottom', 'Muestra')
-        self.graph_widget.setTitle("Graficación en Tiempo Real")
-        main_layout.addWidget(self.graph_widget)
-
+        # Widget central
         container = QWidget()
-        container.setLayout(main_layout)
+        container.setLayout(layout)
         self.setCentralWidget(container)
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_graph)
-
-    def update_ports(self):
-        self.port_dropdown.clear()
-        self.port_dropdown.addItems(self.comm.get_available_ports())
+        # Timer para actualizar la gráfica
+        self.timer = pg.QtCore.QTimer()
+        self.timer.timeout.connect(self.update_plot)
 
     def connect_serial(self):
-        self.comm.port = self.port_dropdown.currentText()
-        if self.comm.connect():
-            self.status_label.setText("Estado: Conectado")
+        port = self.port_dropdown.currentText()
+        if self.serial_comm.connect(port):
             self.connect_button.setEnabled(False)
+            self.disconnect_button.setEnabled(True)
             self.start_button.setEnabled(True)
+            QMessageBox.information(self, "Conectado", f"Conectado al puerto {port}")
         else:
-            QMessageBox.critical(self, "Error de Conexión", f"No se pudo conectar al puerto {self.comm.port}")
+            QMessageBox.critical(self, "Error", f"No se pudo conectar al puerto {port}")
 
     def start_graph(self):
-        self.graphing = True
-        self.data_handler.data = []
+        self.data = []
+        self.timestamps = []
+        self.start_time = time.time()
+        self.timer.start(50)
         self.start_button.setEnabled(False)
-        self.stop_button.setEnabled(True)
-        self.save_button.setEnabled(False)
-        self.timer.start(1)
-
-    def stop_graph(self):
-        self.graphing = False
-        self.timer.stop()
-        self.start_button.setEnabled(True)
-        self.stop_button.setEnabled(False)
         self.save_button.setEnabled(True)
 
-    def update_graph(self):
-        if self.graphing:
-            line = self.comm.read_line()
-            if line:
-                try:
-                    value = float(line)
-                    self.data_handler.add_data(value)
-                    self.graph_widget.plot(self.data_handler.get_data(), clear=True, pen=pg.mkPen(color='b', width=2))
-                except ValueError:
-                    pass
+    def disconnect_serial(self):
+        self.timer.stop()
+        self.serial_comm.disconnect()
+        self.connect_button.setEnabled(True)
+        self.disconnect_button.setEnabled(False)
+        self.start_button.setEnabled(False)
+        QMessageBox.information(self, "Desconectado", "Conexión cerrada.")
+
+    def update_plot(self):
+        value = self.serial_comm.read_data()
+        if value is not None:
+            current_time = time.time() - self.start_time
+            self.timestamps.append(current_time)
+            self.data.append(value)
+            self.plot.setData(self.timestamps, self.data)
+            self.plot_widget.setXRange(max(0, current_time - 10), current_time)  # Scrolling effect
 
     def save_csv(self):
-        self.data_handler.save_csv(self)
+        if self.data:
+            filename, _ = QFileDialog.getSaveFileName(self, "Guardar CSV", "", "CSV files (*.csv)")
+            if filename:
+                with open(filename, 'w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(["Timestamp", "Value"])
+                    for timestamp, value in zip(self.timestamps, self.data):
+                        writer.writerow([timestamp, value])
+                QMessageBox.information(self, "Guardado", f"Datos guardados en {filename}")
