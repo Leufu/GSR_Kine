@@ -17,8 +17,6 @@ la idea general de como debe funcionar este programa es:
 -gráfica en tiempo real
 -guardado en .csv
 
-Comentaré en el codigo su funcionamiento
-
 """
 
 
@@ -62,6 +60,7 @@ class SerialMonitorApp(QMainWindow):
         # Gráfico
         self.plot_widget = pg.PlotWidget()
         self.plot_widget.setBackground('w')  # Establecer fondo blanco
+        self.plot_widget.showGrid(x=True, y=True) # cuadriculado
         self.plot = self.plot_widget.plot([], [], pen='b')
         layout.addWidget(self.plot_widget)
 
