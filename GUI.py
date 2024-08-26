@@ -5,11 +5,28 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPu
 import pyqtgraph as pg
 from serial_communication import SerialCommunication
 
+"""
+La clase de la conexión la deje aparte,
+la del plot esta en este código, puede ser mejorado a futuro
+aquí con la libreria PyQt5 se hace la interfaz
+
+la idea general de como debe funcionar este programa es:
+-boton para conectar al arduino
+-boton para graficar
+-boton para deconectar
+-gráfica en tiempo real
+-guardado en .csv
+
+Comentaré en el codigo su funcionamiento
+
+"""
+
+
 class SerialMonitorApp(QMainWindow):
     def __init__(self):
         super().__init__()
-
-        self.setWindowTitle("Arduino Serial Monitor")
+#titulo ventana
+        self.setWindowTitle("Proyecto GSR Kine")
         self.setGeometry(100, 100, 800, 600)
 
         self.serial_comm = SerialCommunication()
@@ -63,6 +80,8 @@ class SerialMonitorApp(QMainWindow):
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update_plot)
 
+#conecta el arduino
+
     def connect_serial(self):
         port = self.port_dropdown.currentText()
         if self.serial_comm.connect(port):
@@ -73,6 +92,8 @@ class SerialMonitorApp(QMainWindow):
         else:
             QMessageBox.critical(self, "Error", f"No se pudo conectar al puerto {port}")
 
+#comienza la gráfica
+
     def start_graph(self):
         self.data = []
         self.timestamps = []
@@ -81,6 +102,7 @@ class SerialMonitorApp(QMainWindow):
         self.start_button.setEnabled(False)
         self.save_button.setEnabled(True)
 
+#cierre de desconexión
     def disconnect_serial(self):
         self.timer.stop()
         self.serial_comm.disconnect()
@@ -89,6 +111,7 @@ class SerialMonitorApp(QMainWindow):
         self.start_button.setEnabled(False)
         QMessageBox.information(self, "Desconectado", "Conexión cerrada.")
 
+#aquí se hace el "Scrolling window/plot"
     def update_plot(self):
         value = self.serial_comm.read_data()
         if value is not None:
@@ -98,6 +121,7 @@ class SerialMonitorApp(QMainWindow):
             self.plot.setData(self.timestamps, self.data)
             self.plot_widget.setXRange(max(0, current_time - 10), current_time)  # Scrolling effect
 
+#guardado en .CSV
     def save_csv(self):
         if self.data:
             filename, _ = QFileDialog.getSaveFileName(self, "Guardar CSV", "", "CSV files (*.csv)")
