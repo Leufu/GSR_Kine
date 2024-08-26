@@ -14,6 +14,8 @@ la idea general de como debe funcionar este programa es:
 -gráfica en tiempo real
 -guardado en .csv
 
+Manuel Mesa
+
 """
 
 if __name__ == "__main__":
