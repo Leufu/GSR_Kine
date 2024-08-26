@@ -7,14 +7,29 @@ from GUI import SerialMonitorApp
 """
 Inicio fácil
 
-la idea general de como debe funcionar este programa es:
--boton para conectar al arduino
--boton para graficar
--boton para deconectar
+La idea general de como debe funcionar este programa es:
+
+-botón para conectar al Arduino
+-botón para graficar
+-botón para desconectar
 -gráfica en tiempo real
 -guardado en .csv
 
 Manuel Mesa
+
+Contiene tres archivos:
+
+main.py:
+Archivo que contiene el loop principal de la "app"
+
+GUI.py:
+Aquí está el la interfaz,
+con sus funciones y widgets 
+llama las funciones de la clase de la comincación con el arduino que esta en el otro archivo
+
+serial_communication.py:
+Aquí la clase para comunicar con el arduino,
+conecta, desconecta, pide datos, etc.
 
 """
 
