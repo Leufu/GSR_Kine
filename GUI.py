@@ -11,9 +11,9 @@ la del plot esta en este código, puede ser mejorado a futuro
 aquí con la libreria PyQt5 se hace la interfaz
 
 la idea general de como debe funcionar este programa es:
--boton para conectar al arduino
--boton para graficar
--boton para deconectar
+-botón para conectar al arduino
+-botón para graficar
+-botón para deconectar
 -gráfica en tiempo real
 -guardado en .csv
 
