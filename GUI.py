@@ -39,9 +39,9 @@ class SerialMonitorApp(QMainWindow):
         layout.addWidget(self.port_dropdown)
 
         # Botón para refrescar puertos
-       # self.refresh_button = QPushButton("Refresh")
-       # self.refresh_button.clicked.connect(self.serial_comm.get_available_ports())
-       # layout.addWidget(self.refresh_button)
+        self.refresh_button = QPushButton("Refresh")
+        self.refresh_button.clicked.connect(self.update_ports)
+        layout.addWidget(self.refresh_button)
 
         # Botón para conectar
         self.connect_button = QPushButton("Conectar")
@@ -94,10 +94,10 @@ class SerialMonitorApp(QMainWindow):
         else:
             QMessageBox.critical(self, "Error", f"No se pudo conectar al puerto {port}")
     
-   # def refresh_ports(self):
-   #     ports = self.serial_comm.get_available_ports()
-   #     self.port_combo.clear()
-   #     self.port_combo.addItems(ports)
+    def update_ports(self):
+        ports = self.serial_comm.get_available_ports()
+        self.port_dropdown.clear()
+        self.port_dropdown.addItems(ports)
 
 #comienza la gráfica
 
