@@ -1,10 +1,3 @@
-import sys
-import csv
-import time
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QComboBox, QMessageBox, QFileDialog
-import pyqtgraph as pg
-from serial_communication import SerialCommunication
-
 """
 La clase de la conexión la deje aparte,
 la del plot esta en este código, puede ser mejorado a futuro
@@ -18,7 +11,12 @@ la idea general de como debe funcionar este programa es:
 -guardado en .csv
 
 """
-
+import sys
+import csv
+import time
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QComboBox, QMessageBox, QFileDialog
+import pyqtgraph as pg
+from serial_communication import SerialCommunication
 
 class SerialMonitorApp(QMainWindow):
     def __init__(self):
@@ -39,6 +37,11 @@ class SerialMonitorApp(QMainWindow):
         self.port_dropdown = QComboBox()
         self.port_dropdown.addItems(self.serial_comm.get_available_ports())
         layout.addWidget(self.port_dropdown)
+
+        # Botón para refrescar puertos
+       # self.refresh_button = QPushButton("Refresh")
+       # self.refresh_button.clicked.connect(self.serial_comm.get_available_ports())
+       # layout.addWidget(self.refresh_button)
 
         # Botón para conectar
         self.connect_button = QPushButton("Conectar")
@@ -90,6 +93,11 @@ class SerialMonitorApp(QMainWindow):
             QMessageBox.information(self, "Conectado", f"Conectado al puerto {port}")
         else:
             QMessageBox.critical(self, "Error", f"No se pudo conectar al puerto {port}")
+    
+   # def refresh_ports(self):
+   #     ports = self.serial_comm.get_available_ports()
+   #     self.port_combo.clear()
+   #     self.port_combo.addItems(ports)
 
 #comienza la gráfica
 
