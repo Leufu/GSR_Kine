@@ -14,7 +14,7 @@ la idea general de como debe funcionar este programa es:
 import sys
 import csv
 import time
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QComboBox, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QComboBox, QMessageBox, QFileDialog, QLabel
 import pyqtgraph as pg
 from serial_communication import SerialCommunication
 
@@ -47,6 +47,14 @@ class SerialMonitorApp(QMainWindow):
         self.connect_button = QPushButton("Conectar")
         self.connect_button.clicked.connect(self.connect_serial)
         layout.addWidget(self.connect_button)
+
+        # Etiqueta de estado
+        #Etiqueta cuando se usó tkinter
+        #self.status_label = tk.Label(self.root, text="Estado: Desconectado", fg="red")
+        #self.status_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
+        # En pyQt
+        self.status_label = QLabel("Status: Disconnected", self)
+        layout.addWidget(self.status_label)
 
         # Botón para comenzar a graficar
         self.start_button = QPushButton("Iniciar Gráfica")
@@ -91,6 +99,8 @@ class SerialMonitorApp(QMainWindow):
             self.disconnect_button.setEnabled(True)
             self.start_button.setEnabled(True)
             QMessageBox.information(self, "Conectado", f"Conectado al puerto {port}")
+            self.status_label.setText(f"Status: Connected to {port}")  # Actualizar la QLabel
+            self.status_label.setStyleSheet("color: green;")  # Cambiar color a verde
         else:
             QMessageBox.critical(self, "Error", f"No se pudo conectar al puerto {port}")
     
@@ -116,6 +126,8 @@ class SerialMonitorApp(QMainWindow):
         self.connect_button.setEnabled(True)
         self.disconnect_button.setEnabled(False)
         self.start_button.setEnabled(False)
+        self.status_label.setText("Status: Disconnected")  # Actualizar la QLabel
+        self.status_label.setStyleSheet("color: red;")  # Cambiar color a rojo
         QMessageBox.information(self, "Desconectado", "Conexión cerrada.")
 
 #aquí se hace el "Scrolling window/plot"
