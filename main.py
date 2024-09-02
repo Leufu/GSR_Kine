@@ -23,7 +23,7 @@ main.py:
 Archivo que contiene el loop principal de la "app"
 
 GUI.py:
-Aquí está el la interfaz,
+Aquí está la interfaz,
 con sus funciones y widgets 
 llama las funciones de la clase de la comincación con el arduino que esta en el otro archivo
 
