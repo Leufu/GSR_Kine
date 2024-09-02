@@ -11,13 +11,13 @@ Hay que evitar el uso de unos arrays.
 
 3. Consumo de CPU y Memoria: Arrays
 
-4. Gestión de la Interfaz Gráfica: faltan botones para que sea más comodo la grabación de archivos
+4. Gestión de la Interfaz Gráfica: faltan botones para que sea más comodo la grabación de archivos (Pausa, iniciar, borrar)
 
-5. Aprovechar de poner un nombre al archivo antes de guardar
+5. Aprovechar de poner un nombre al archivo antes de guardar (no sé)
 
-6. poner un botón para refrescar puertos
+6. poner un botón para refrescar puertos (interes)
 
-7. algun "LED" que diga el estado de la conexión
+7. algun "LED" que diga el estado de la conexión (no es urgente)
 
 ## ¿Qué hacer?
 
@@ -26,3 +26,19 @@ Hay que evitar el uso de unos arrays.
 2. replantear la gestión de datos
 
 3. Más funcionalidades
+
+## ¿qué se está haciendo?
+
+1. buffer creado (en serial comm)
+
+2. crear botones 
+
+    + Pausa
+
+    + Borrar
+
+    + Iniciar
+
+    
+
+
