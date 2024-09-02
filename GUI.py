@@ -52,6 +52,7 @@ class SerialMonitorApp(QMainWindow):
         #Etiqueta cuando se usó tkinter
         #self.status_label = tk.Label(self.root, text="Estado: Desconectado", fg="red")
         #self.status_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
+        
         # En pyQt
         self.status_label = QLabel("Status: Disconnected", self)
         layout.addWidget(self.status_label)
