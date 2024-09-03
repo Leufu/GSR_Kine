@@ -48,11 +48,17 @@ class SerialMonitorApp(QMainWindow):
         self.connect_button.clicked.connect(self.connect_serial)
         layout.addWidget(self.connect_button)
 
+        # Botón para desconectar
+        self.disconnect_button = QPushButton("Desconectar")
+        self.disconnect_button.clicked.connect(self.disconnect_serial)
+        self.disconnect_button.setEnabled(False)
+        layout.addWidget(self.disconnect_button)
+
         # Etiqueta de estado
         #Etiqueta cuando se usó tkinter
         #self.status_label = tk.Label(self.root, text="Estado: Desconectado", fg="red")
         #self.status_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
-        
+
         # En pyQt
         self.status_label = QLabel("Status: Disconnected", self)
         layout.addWidget(self.status_label)
@@ -63,11 +69,27 @@ class SerialMonitorApp(QMainWindow):
         self.start_button.setEnabled(False)
         layout.addWidget(self.start_button)
 
-        # Botón para desconectar
-        self.disconnect_button = QPushButton("Desconectar")
-        self.disconnect_button.clicked.connect(self.disconnect_serial)
-        self.disconnect_button.setEnabled(False)
-        layout.addWidget(self.disconnect_button)
+        # Botón para PARAR a graficar
+        self.stop_button = QPushButton("Detener Gráfica")
+        self.stop_button.clicked.connect(self.stop_graph)
+        self.stop_button.setEnabled(False)
+        layout.addWidget(self.stop_button)
+
+        # Botón para REINICIAR la grafica
+        self.reset_button = QPushButton("Reiniciar Gráfica")
+        self.reset_button.clicked.connect(self.reset_graph)
+        self.reset_button.setEnabled(False)
+        layout.addWidget(self.reset_button)
+
+        # Gráfica en Tkinter
+        
+        # Botón para iniciar la graficación
+        # self.start_button = tk.Button(self.root, text="Iniciar Graficación", command=self.start_graph, state="disabled")
+        # self.start_button.grid(row=2, column=0, padx=10, pady=10)
+
+        # Botón para detener la graficación
+        # self.stop_button = tk.Button(self.root, text="Detener Graficación", command=self.stop_graph, state="disabled")
+        # self.stop_button.grid(row=2, column=1, padx=10, pady=10)
 
         # Gráfico
         self.plot_widget = pg.PlotWidget()
@@ -110,6 +132,22 @@ class SerialMonitorApp(QMainWindow):
         self.port_dropdown.clear()
         self.port_dropdown.addItems(ports)
 
+# En Tkinter
+
+#    def start_graph(self):
+#        self.graphing = True
+#        self.data = []
+#        self.start_button.config(state="disabled")
+#        self.stop_button.config(state="normal")
+#        self.save_button.config(state="disabled")
+#        self.update_graph()
+
+#    def stop_graph(self):
+#        self.graphing = False
+#        self.stop_button.config(state="disabled")
+#        self.start_button.config(state="normal")
+#        self.save_button.config(state="normal")
+
 #comienza la gráfica
 
     def start_graph(self):
@@ -118,7 +156,31 @@ class SerialMonitorApp(QMainWindow):
         self.start_time = time.time()
         self.timer.start(50)
         self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+        self.reset_button.setEnabled(True)
         self.save_button.setEnabled(True)
+
+#   def start_graph(self):
+#        self.data = []
+#        self.timestamps = []
+#        self.start_time = time.time()
+#        self.timer.start(50)
+#        self.start_button.setEnabled(False)
+#        self.stop_button.setEnabled(True)
+#        self.reset_button.setEnabled(True)
+#        self.save_button.setEnabled(True) 
+
+    def stop_graph(self):
+        self.timer.stop()
+        self.start_button.setEnabled(True)
+        self.stop_button.setEnabled(False)
+
+    def reset_graph(self):
+        self.stop_graph()
+        self.data.clear()
+        self.timestamps.clear()
+        self.plot.clear()
+        self.start_graph()
 
 #cierre de desconexión
     def disconnect_serial(self):
