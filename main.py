@@ -11,6 +11,7 @@ La idea general de como debe funcionar este programa es:
 
 -botón para conectar al Arduino
 -botón para graficar
+
 -botón para desconectar
 -gráfica en tiempo real
 -guardado en .csv
